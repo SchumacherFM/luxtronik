@@ -272,6 +272,6 @@ func NewCalculationsMap() DataTypeMap {
 		264: NewUnknown("Unknown_Calculation_264"),
 		265: NewUnknown("Unknown_Calculation_265"),
 		266: NewUnknown("Unknown_Calculation_266"),
-		267: NewUnknown("Unknown_Calculation_267"),
+		267: NewUnknown("Unknown_Calculation_267"), // Desired Room Temperature ?
 	}
 }

@@ -14,53 +14,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegration_Parameter_Client(t *testing.T) {
-	c := MustNewClient("192.168.0.121:"+DefaultPort, Options{
-		SafeMode: true,
-	})
+func TestIntegration_Client(t *testing.T) {
+	heatPumpIP := os.Getenv("HEATPUMP_IP")
+	if heatPumpIP == "" {
+		heatPumpIP = "192.168.0.121" + ":" + DefaultPort
+	}
 
-	require.NoError(t, c.Connect())
-	defer func() {
-		assert.NoError(t, c.Close())
-	}()
+	runTest := func(newMap func() DataTypeMap, readFromNet func(*Client, DataTypeMap) error) func(t *testing.T) {
+		return func(t *testing.T) {
+			c := MustNewClient(heatPumpIP, Options{
+				SafeMode: true,
+			})
 
-	// pm := NewParameterMap()
-	pm := NewVisibilitiesMap()
-	// require.NoError(t, c.readParameters(pm))
-	require.NoError(t, c.readVisibilities(pm))
+			require.NoError(t, c.Connect())
+			defer func() {
+				assert.NoError(t, c.Close())
+			}()
 
-	tw := tabwriter.NewWriter(os.Stdout, 12, 1, 1, ' ', 0)
-	printFn := func(w io.Writer) func(i int, p *Base) {
-		return func(i int, p *Base) {
-			if p.rawValue == 0 {
-				return
+			pm := newMap()
+			require.NoError(t, readFromNet(c, pm))
+
+			tw := tabwriter.NewWriter(os.Stdout, 12, 1, 1, ' ', 0)
+			printFn := func(w io.Writer) func(i int, p *Base) {
+				return func(i int, p *Base) {
+					if p.rawValue == 0 {
+						return
+					}
+
+					fmt.Fprintf(
+						w,
+						"Number: %d\tName: %s\tType: %s\tValue: %v\tUnit: %s\n",
+						i,
+						p.luxtronikName,
+						p.class,
+						checkStringer(p.FromHeatPump()),
+						p.unit,
+					)
+				}
 			}
-
-			fmt.Fprintf(
-				w,
-				"Number: %d\tName: %s\tType: %s\tValue: %v\tUnit: %s\n",
-				i,
-				p.luxtronikName,
-				p.class,
-				checkStringer(p.FromHeatPump()),
-				p.unit,
-			)
+			pm.IterateSorted(printFn(tw))
+			require.NoError(t, tw.Flush())
 		}
 	}
-	pm.IterateSorted(printFn(tw))
-	require.NoError(t, tw.Flush())
-	///////////////////////////////////////////////////////////
-	calcMap := NewCalculationsMap()
 
-	require.NoError(t, c.readCalculations(calcMap))
-	fmt.Fprintf(os.Stdout, "\n=======================================================================\n")
-	tw = tabwriter.NewWriter(os.Stdout, 12, 1, 1, ' ', 0)
-
-	calcMap.IterateSorted(printFn(tw))
-	require.NoError(t, tw.Flush())
+	t.Run("Parameter", runTest(NewParameterMap, func(c *Client, pm DataTypeMap) error {
+		return c.readParameters(pm)
+	}))
+	t.Run("Visibilities", runTest(NewVisibilitiesMap, func(c *Client, pm DataTypeMap) error {
+		return c.readVisibilities(pm)
+	}))
+	t.Run("Calculations", runTest(NewCalculationsMap, func(c *Client, pm DataTypeMap) error {
+		return c.readCalculations(pm)
+	}))
 }
 
-func TestIntegration_Calculations_Client(t *testing.T) {
+func TestIntegration_Refreshed_Calculations(t *testing.T) {
 	c := MustNewClient("192.168.0.121:"+DefaultPort, Options{
 		SafeMode: true,
 	})

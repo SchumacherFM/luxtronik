@@ -1150,7 +1150,7 @@ func NewParameterMap() DataTypeMap {
 		1134: NewUnknown("Unknown_Parameter_1134"),
 		1135: NewUnknown("Unknown_Parameter_1135"),
 		1136: NewUnknown("Unknown_Parameter_1136"),
-		1137: NewUnknown("Unknown_Parameter_1137"), // energy inputs
+		1137: NewUnknown("Unknown_Parameter_1137"), // energy inputs https://github.com/Bouni/python-luxtronik/issues/138
 		1138: NewUnknown("Unknown_Parameter_1138"),
 		1139: NewUnknown("Unknown_Parameter_1139"),
 		1140: NewUnknown("Unknown_Parameter_1140"),
@@ -1167,5 +1167,7 @@ func NewParameterMap() DataTypeMap {
 		1151: NewUnknown("Unknown_Parameter_1151"),
 		1152: NewUnknown("Unknown_Parameter_1152"),
 		1153: NewUnknown("Unknown_Parameter_1153"),
+		1154: NewUnknown("Unknown_Parameter_1154"),
+		1155: NewUnknown("Unknown_Parameter_1155"),
 	}
 }

@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alecthomas/repr"
-
 	"go.uber.org/zap"
 )
 
@@ -106,15 +104,13 @@ func (c *Client) readFromHeatPump(pm DataTypeMap, data ...int32) error {
 		return fmt.Errorf("readFromHeatPump.readUint32.cmd failed: %w", err)
 	}
 
-	repr.Println("cmd", cmd)
-
 	if data[0] == CalculationsRead {
 		var stat uint32
 		stat, err = c.readUint32()
 		if err != nil {
 			return fmt.Errorf("readFromHeatPump.readUint32.cmd failed: %w", err)
 		}
-		repr.Println("stat", stat, "cmd", cmd)
+		_ = stat
 	}
 
 	if cmd != uint32(data[0]) {
@@ -126,8 +122,6 @@ func (c *Client) readFromHeatPump(pm DataTypeMap, data ...int32) error {
 		return fmt.Errorf("readFromHeatPump.readUint32.length failed: %w", err)
 	}
 
-	repr.Println("length", length)
-
 	rawValues := make([]uint32, length)
 	for i := uint32(0); i < length; i++ {
 		if data[0] == VisibilitiesRead {
@@ -135,7 +129,6 @@ func (c *Client) readFromHeatPump(pm DataTypeMap, data ...int32) error {
 			if err != nil {
 				return fmt.Errorf("readFromHeatPump.readUint32.paramID at index %d failed: %w", i, err)
 			}
-			repr.Println("i", i, char, char == 1)
 			rawValues[i] = uint32(char) // 0 or 1
 		} else {
 			paramID, err := c.readUint32()
